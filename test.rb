@@ -7,5 +7,7 @@ now = Time.now
 
 puts now.beginning_of_fortnight
 puts now.end_of_fortnight
-puts now.end_of_month.beginning_of_fortnight
-puts now.end_of_month.end_of_fortnight
+
+BeginningOfFortnight.reference_date = Time.at(0) + 7.days
+puts now.beginning_of_fortnight
+puts now.end_of_fortnight

@@ -4,6 +4,7 @@
 #
 #
 #
+
 require 'active_support/time'
 
 class BeginningOfFortnight
@@ -24,38 +25,34 @@ class BeginningOfFortnight
 
 end
 
-module ActiveSupport #nodoc#
-  module CoreExtensions #nodoc#
-    module Time #nodoc#
-      module Calculations #nodoc#
 
-        #
-        # The beginning of the current fortnight
-        #
-        def beginning_of_fortnight
-          # How many weeks since the beginning_of_week before unix time zero
-          # (We just need a reference date. Probably any arbitrary time would work just as well).
-          weeks_since_reference = ((self - BeginningOfFortnight.reference_date.beginning_of_week) / 1.week).to_i
+class Time
 
-          # When there's even number of weeks since epoch use beginning of this week,
-          # odd number use beginning of last week
-          #
-          # The choice of which week should begin a fortnight is arbitrary (as far as I know)
-          # If we change even to odd below then it would be flipped.
-          #
-          # Does it work for negative weeks_since_reference? Better write some tests.. :)
-          #
-          (weeks_since_reference.even? ? self : self - 1.week).beginning_of_week
-        end
+  #
+  # The beginning of the current fortnight
+  #
+  def beginning_of_fortnight
+    # How many weeks since the beginning_of_week before unix time zero
+    # (We just need a reference date. Probably any arbitrary time would work just as well).
+    weeks_since_reference = ((self - BeginningOfFortnight.reference_date.beginning_of_week) / 1.week).to_i
 
-        #
-        # The end of the current fortnight can be easily derived from the beginning like this
-        #
-        def end_of_fortnight
-          (beginning_of_fortnight + 13.days).end_of_day
-        end
+    # When there's even number of weeks since epoch use beginning of this week,
+    # odd number use beginning of last week
+    #
+    # The choice of which week should begin a fortnight is arbitrary (as far as I know)
+    # If we change even to odd below then it would be flipped.
+    #
+    # Does it work for negative weeks_since_reference? Better write some tests.. :)
+    #
+    (weeks_since_reference.even? ? self : self - 1.week).beginning_of_week
+  end
 
-      end
-    end
+  #
+  # The end of the current fortnight can be easily derived from the beginning like this
+  #
+  def end_of_fortnight
+    (beginning_of_fortnight + 13.days).end_of_day
   end
 end
+
+

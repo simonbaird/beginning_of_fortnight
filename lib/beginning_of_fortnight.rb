@@ -11,12 +11,12 @@
 #
 begin
   # Try to load just the time components
-  # Only possible in ActiveRecord 3.0
+  # (Only possible in ActiveRecord 3.0)
   require 'active_support/time'
 rescue LoadError
   # Presume ActiveRecord 2.x
   # Require the whole lot of active_support
-  # (It's not worth the effort to cherry pick the time components)
+  # (Decided it's not worth the effort to try to cherry pick just the time components)
   require 'active_support'
 end
 
@@ -25,19 +25,19 @@ class BeginningOfFortnight
   #
   # Fortnights are specified so that the reference date is in the first week of a fortnight.
   # This is just in case you want to be explicit about when fortnight start.
-  # Eg, BeginningOfFortnight.reference_date = some_date
+  # Eg, BeginningOfFortnight.reference_week = some_date_in_that_week
   #
   # (Considered using cattr_accessor here)
   #
   # (Is this a sensible idiom this type of setting?)
   #
-  def self.reference_date
-    @@reference ||= Time.at(0)
+  DEFAULT_REF_DATE = Time.at(0)
+  def self.reference_week
+    (@@reference_date ||= DEFAULT_REF_DATE).beginning_of_week
   end
 
-  def self.reference_date=(new_reference_date)
-    puts new_reference_date
-    @@reference = new_reference_date
+  def self.reference_date=(reference_date)
+    @@reference_date = reference_date
   end
 
 end
@@ -54,21 +54,18 @@ class Time
   # The beginning of the current fortnight
   #
   def beginning_of_fortnight
-    # How many weeks since the beginning_of_week before unix time zero
-    # (We just need a reference date. Probably any arbitrary time would work just as well).
-    weeks_since_reference = ((self - BeginningOfFortnight.reference_date.beginning_of_week) / 1.week).to_i
+    # How many weeks since the beginning_of_week before the reference time?
+    weeks_since_reference = ((self - BeginningOfFortnight.reference_week) / 1.week).to_i
 
-    puts "weeks_since_reference: #{weeks_since_reference}"
+    # If the reference time is later than self then we flip the odd/even test.
+    # In this diagram, '|' is a fortnight boundary, '+' is a week boundary and R is the reference week
+    # |  a  +  b  |R c  +  d  |
+    # The value of weeks_since_reference for a, b, c and d is as follows:
+    # a: -1, ie odd. b: 0, ie even.  c: 0, ie even. d: 1, ie odd
+    in_first_half = (BeginningOfFortnight.reference_week > self ? weeks_since_reference.odd? : weeks_since_reference.even?)
 
-    # When there's even number of weeks since epoch use beginning of this week,
-    # odd number use beginning of last week
-    #
-    # The choice of which week should begin a fortnight is arbitrary (as far as I know)
-    # If we change even to odd below then it would be flipped.
-    #
-    # Does it work for negative weeks_since_reference? Better write some tests.. :)
-    #
-    (weeks_since_reference.even? ? self : self - 1.week).beginning_of_week
+    # in_first_half decides which week to use
+    (in_first_half ? self : self - 1.week).beginning_of_week
   end
 
   #

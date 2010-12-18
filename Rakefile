@@ -19,6 +19,10 @@ end
 
 desc "Run tests"
 task :test do
-  system "rspec -c -fd spec"
+  system "rspec -c -fp spec"
+end
+
+desc "Install then run tests"
+task :install_test => [:install, :test] do
 end
 

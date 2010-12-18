@@ -17,3 +17,8 @@ task :install => :build do
   system "sudo gem install pkg/#{gemspec.name}-#{gemspec.version}"
 end
 
+desc "Run tests"
+task :test do
+  system "rspec -c -fd spec"
+end
+

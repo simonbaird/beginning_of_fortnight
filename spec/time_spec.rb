@@ -10,15 +10,22 @@ describe Time, "#beginning_of_fortnight" do
     @test_time                 = Time.parse('17-Dec-2010') # A Friday
     @test_time_start_week      = Time.parse('13-Dec-2010') # The Monday before
     @test_time_start_prev_week = Time.parse('06-Dec-2010') # The previous Monday before
+
+    # Make sure it's reset back to use the default because some tests change this
+    BeginningOfFortnight.reference_date = nil
   end
 
-  it "Can set and retrieve reference_week correctly" do
+  it "can set and retrieve reference_week correctly" do
     BeginningOfFortnight.reference_date = @test_time
     BeginningOfFortnight.reference_week.should == @test_time.beginning_of_week
-    BeginningOfFortnight.reference_date = nil # Make it use the default so we don't mess with subsequent tests
   end
 
-  it "Returns a Time object" do
+  it "can also set reference_week using a string" do
+    BeginningOfFortnight.reference_date = '01-Jun-1973'
+    BeginningOfFortnight.reference_week.should == Time.parse('01-Jun-1973').beginning_of_week
+  end
+
+  it "returns a Time object" do
     [@now_time,@test_time].each do |t|
       t.beginning_of_fortnight.class.should == Time
       t.end_of_fortnight.class.should == Time
@@ -26,7 +33,7 @@ describe Time, "#beginning_of_fortnight" do
     end
   end
 
-  it "Gives correct values for a certain date with default reference" do
+  it "gives correct values for a test date with default reference" do
     # With default reference date
     # (With the default reference date, this date falls in the second week of a fornight)
     @test_time.beginning_of_fortnight .should == @test_time_start_prev_week
@@ -34,7 +41,19 @@ describe Time, "#beginning_of_fortnight" do
     @test_time.next_fortnight         .should == @test_time_start_prev_week + 14.days
   end
 
-  it "Gives correct values for a certain date with explict reference" do
+  it "flip_boundaries works as expected for the test date" do
+    original = @test_time.beginning_of_fortnight
+    BeginningOfFortnight.flip_boundaries
+    flipped = @test_time.beginning_of_fortnight
+    BeginningOfFortnight.flip_boundaries
+    reflipped = @test_time.beginning_of_fortnight
+
+    original.should_not == flipped
+    original.should == reflipped
+    (original.to_i - flipped.to_i).abs.should == 1.week
+  end
+
+  it "gives correct values for a test date with explict reference" do
     # Now explicitly set a reference date. Setting a reference date specifies that the given date
     # is in the first week of a fornight.
     BeginningOfFortnight.reference_date = @test_time
@@ -45,19 +64,19 @@ describe Time, "#beginning_of_fortnight" do
     @test_time.beginning_of_fortnight .should == @test_time_start_prev_week
   end
 
-  it "Gives sane values for Time.now" do
+  it "gives sane values for Time.now" do
     bof = @now_time.beginning_of_fortnight
     @now_time.end_of_fortnight .should == (bof + 13.days).end_of_day
     @now_time.next_fortnight   .should == bof + 14.days
 
     # Test the reference week stuff again I guess
-    BeginningOfFortnight.reference_date = Time.at(0) + 1.week
+    BeginningOfFortnight.flip_boundaries
     alt_bof = @now_time.beginning_of_fortnight
     alt_bof.should_not == bof
     (bof.to_i - alt_bof.to_i).abs.should == 1.week
   end
 
-  it "Passes some edge case and misc sanity tests" do
+  it "passes some edge case and misc sanity tests" do
     [@now_time,@test_time].each do |t|
       bof = t.beginning_of_fortnight
       eof = t.end_of_fortnight

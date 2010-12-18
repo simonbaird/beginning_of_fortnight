@@ -1,43 +1,57 @@
 #
-# Extend ActiveSupport to provide a beginning_of_fortnight and an
-# end_of_fortnight method for the Time class
-#
-#
+# Extends ActiveSupport to provide the following core extentions to the Time class:
+#   beginning_of_fortnight
+#   end_of_fortnight
+#   next_fortnight
 #
 
-
-#
-# ActiveRecord 2.xR 3.x I want to require only the time component
-#
 begin
   # Try to load just the time components
   # (Only possible in ActiveRecord 3.0)
   require 'active_support/time'
 rescue LoadError
-  # Presume ActiveRecord 2.x
-  # Require the whole lot of active_support
+  # Presume we must have ActiveRecord 2.x so require the whole lot of active_support
   # (Decided it's not worth the effort to try to cherry pick just the time components)
   require 'active_support'
 end
 
 
+#
+# Just a namespace and an accessor for the a reference
+# date used to define fortnight boundaries.
+#
+# (Is this a sensible idiom this type of config?)
+#
 class BeginningOfFortnight
   #
-  # Fortnights are specified so that the reference date is in the first week of a fortnight.
-  # This is just in case you want to be explicit about when fortnight start.
-  # Eg, BeginningOfFortnight.reference_week = some_date_in_that_week
-  #
-  # (Considered using cattr_accessor here)
-  #
-  # (Is this a sensible idiom this type of setting?)
+  # Provide an accessor and a default reference date
   #
   DEFAULT_REF_DATE = Time.at(0)
   def self.reference_week
     (@@reference_date ||= DEFAULT_REF_DATE).beginning_of_week
   end
 
+  #
+  # The 'reference_date' here is used to define where the fortnight boundary should be.
+  # The way it works is that the reference_date is specified such that it falls in the first
+  # half of the fortnightly period.
+  #
+  # You can just ignore this it will use a default value but if you want to be explicit then
+  # set a date, for example:
+  #
+  #   # Define fortnight boundary
+  #   BeginningOfFortnight.reference_date = Time.parse('10-Oct-2010')
+  #
   def self.reference_date=(reference_date)
-    @@reference_date = reference_date
+    @@reference_date = (reference_date.class == String ? Time.parse(reference_date) : reference_date)
+  end
+
+  #
+  # Not sure how useful this is really, but why not.
+  # This works because there is only two ways that you can cut up weeks into fortnights.
+  #
+  def self.flip_boundaries
+    self.reference_date = self.reference_week + 1.week
   end
 
 end
@@ -45,16 +59,17 @@ end
 
 
 #
-# AR 2.x uses ActiveSupport::CoreExtensions::Time::Calculations
-# But AR 3.x just adds methods directly to Time
-# Will try the 3.x approach and hopefully it will work in 2.x also.
+# ActiveRecord 2.x puts these methods in a big long name space,
+# ie ActiveSupport::CoreExtensions::Time::Calculations
+# ActiveSupport 3.x just adds methods directly to Time.
+# Will try the 3.x approach and hopefully it will work okay in 2.x also.
 #
 class Time
   #
   # The beginning of the current fortnight
   #
   def beginning_of_fortnight
-    # How many weeks since the beginning_of_week before the reference time?
+    # How many weeks since reference week?
     weeks_since_reference = ((self - BeginningOfFortnight.reference_week) / 1.week).to_i
 
     # If the reference time is later than self then we flip the odd/even test.
@@ -75,8 +90,11 @@ class Time
     (beginning_of_fortnight + 13.days).end_of_day
   end
 
+  #
+  # There is a next_week so let's make a next_fortnight as well
+  #
   def next_fortnight
-    (self + 1.fortnight).beginning_of_fortnight
+    beginning_of_fortnight + 14.days
   end
 end
 

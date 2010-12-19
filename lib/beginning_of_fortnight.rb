@@ -27,8 +27,8 @@ module BeginningOfFortnight
   # Provide an accessor and a default reference date
   #
   DEFAULT_REF_DATE = Time.at(0)
-  def self.reference_week
-    (@@reference_date ||= DEFAULT_REF_DATE).beginning_of_week
+  def self.reference_date
+    @@reference_date ||= DEFAULT_REF_DATE
   end
 
   #
@@ -51,7 +51,7 @@ module BeginningOfFortnight
   # This works because there is only two ways that you can cut up weeks into fortnights.
   #
   def self.flip_boundaries
-    self.reference_date = self.reference_week + 1.week
+    self.reference_date = self.reference_date + 1.week
   end
 
 end
@@ -67,16 +67,19 @@ class Time
   #
   # The beginning of the current fortnight
   #
-  def beginning_of_fortnight
+  def beginning_of_fortnight(reference_date=nil)
+    # Can pass in a reference date, otherwise use the configured default
+    reference_week = (reference_date || BeginningOfFortnight.reference_date).beginning_of_week
+
     # How many weeks since reference week?
-    weeks_since_reference = ((self - BeginningOfFortnight.reference_week) / 1.week).to_i
+    weeks_since_reference = ((self - reference_week) / 1.week).to_i
 
     # If the reference time is later than self then we flip the odd/even test.
     # In this diagram, '|' is a fortnight boundary, '+' is a week boundary and R is the reference week
     # |  a  +  b  |R c  +  d  |
     # The value of weeks_since_reference for a, b, c and d is as follows:
     # a: -1, ie odd. b: 0, ie even.  c: 0, ie even. d: 1, ie odd
-    in_first_half = (BeginningOfFortnight.reference_week > self ? weeks_since_reference.odd? : weeks_since_reference.even?)
+    in_first_half = (reference_week > self ? weeks_since_reference.odd? : weeks_since_reference.even?)
 
     # in_first_half decides which week to use
     (in_first_half ? self : self - 1.week).beginning_of_week
@@ -85,15 +88,15 @@ class Time
   #
   # The end of the current fortnight can be easily derived from the beginning like this
   #
-  def end_of_fortnight
-    (beginning_of_fortnight + 13.days).end_of_day
+  def end_of_fortnight(reference_date=nil)
+    (beginning_of_fortnight(reference_date) + 13.days).end_of_day
   end
 
   #
   # There is a next_week so let's make a next_fortnight as well
   #
-  def next_fortnight
-    beginning_of_fortnight + 14.days
+  def next_fortnight(reference_date=nil)
+    beginning_of_fortnight(reference_date) + 14.days
   end
 end
 

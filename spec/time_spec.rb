@@ -15,14 +15,14 @@ describe Time, "#beginning_of_fortnight" do
     BeginningOfFortnight.reference_date = nil
   end
 
-  it "can set and retrieve reference_week correctly" do
+  it "can set and retrieve reference_date correctly" do
     BeginningOfFortnight.reference_date = @test_time
-    BeginningOfFortnight.reference_week.should == @test_time.beginning_of_week
+    BeginningOfFortnight.reference_date.should == @test_time
   end
 
-  it "can also set reference_week using a string" do
+  it "can also set reference_date using a string" do
     BeginningOfFortnight.reference_date = '01-Jun-1973'
-    BeginningOfFortnight.reference_week.should == Time.parse('01-Jun-1973').beginning_of_week
+    BeginningOfFortnight.reference_date.should == Time.parse('01-Jun-1973')
   end
 
   it "returns a Time object" do
@@ -134,6 +134,11 @@ describe Time, "#beginning_of_fortnight" do
     end
   end
 
+  it "works with a custom reference date given as an argument" do
+    # TODO: make this less confusing, and test the argument better
+    @test_time.beginning_of_fortnight(@test_time) .should == @test_time.beginning_of_week
+    @test_time.beginning_of_fortnight(@test_time - 1.week) .should == (@test_time - 1.week).beginning_of_week
+  end
 
 
 end

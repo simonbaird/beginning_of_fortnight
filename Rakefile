@@ -17,12 +17,22 @@ task :install => :build do
   system "sudo gem install pkg/#{gemspec.name}-#{gemspec.version}"
 end
 
+desc "Create rdoc"
+task :rdoc => :build do
+  system "rm -rf doc"
+  system "rdoc lib"
+end
+
 desc "Run tests"
-task :test do
-  system "rspec -c -fp spec"
+task :spec do
+  system "spec -c -fp spec/*"
 end
 
 desc "Install then run tests"
-task :install_test => [:install, :test] do
+task :install_test => [:gemspec, :install, :spec] do
+end
+
+desc "Install then run tests then build docs"
+task :all => [:gemspec, :install, :spec, :rdoc] do
 end
 

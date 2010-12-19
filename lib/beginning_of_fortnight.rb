@@ -22,7 +22,7 @@ end
 #
 # (Is this a sensible idiom this type of config?)
 #
-class BeginningOfFortnight
+module BeginningOfFortnight
   #
   # Provide an accessor and a default reference date
   #
@@ -55,7 +55,6 @@ class BeginningOfFortnight
   end
 
 end
-
 
 
 #

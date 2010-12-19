@@ -83,10 +83,40 @@ describe Time, "#beginning_of_fortnight" do
 
       nxt = t.next_fortnight
       nxt2 = t.next_fortnight.next_fortnight
-
       prev = (t - 14.days).beginning_of_fortnight
       prev2 = (t - 28.days).beginning_of_fortnight
 
+      # Basic sanity stuff
+      # (Maybe overkill)
+      (nxt - bof)  .should == 2.weeks
+      (nxt2 - bof) .should == 4.weeks
+      (nxt.end_of_fortnight - eof) .should == 2.weeks
+      (nxt - prev) .should == 4.weeks
+
+      # Actually not sure if beginning_of_week in AR is
+      # always Monday, is it configurable? TODO: find out.
+      bof.wday.should == 1 # Monday
+      eof.wday.should == 0 # Sunday
+      nxt.wday.should == 1 # Monday
+
+      bof.hour.should == 0
+      eof.hour.should == 23
+      nxt.hour.should == 0
+
+      bof.min.should == 0
+      eof.min.should == 59
+      nxt.min.should == 0
+
+      bof.sec.should == 0
+      eof.sec.should == 59
+      nxt.sec.should == 0
+
+      bof.should be <= t
+      eof.should be >= t
+      (t - bof).should be < 2.weeks
+      (eof - t).should be < 2.weeks
+
+      # Edge stuff
       (bof - 1.second).beginning_of_fortnight.should == bof - 14.days
       (eof + 1.second).end_of_fortnight.should == eof + 14.days
 

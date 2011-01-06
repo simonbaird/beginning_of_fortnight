@@ -20,11 +20,6 @@ describe Time, "#beginning_of_fortnight" do
     BeginningOfFortnight.reference_date.should == @test_time
   end
 
-  it "can also set reference_date using a string" do
-    BeginningOfFortnight.reference_date = '01-Jun-1973'
-    BeginningOfFortnight.reference_date.should == Time.parse('01-Jun-1973')
-  end
-
   it "returns a Time object" do
     [@now_time,@test_time].each do |t|
       t.beginning_of_fortnight.class.should == Time
@@ -39,18 +34,6 @@ describe Time, "#beginning_of_fortnight" do
     @test_time.beginning_of_fortnight .should == @test_time_start_prev_week
     @test_time.end_of_fortnight       .should == (@test_time_start_prev_week + 13.days).end_of_day
     @test_time.next_fortnight         .should == @test_time_start_prev_week + 14.days
-  end
-
-  it "flip_boundaries works as expected for the test date" do
-    original = @test_time.beginning_of_fortnight
-    BeginningOfFortnight.flip_boundaries
-    flipped = @test_time.beginning_of_fortnight
-    BeginningOfFortnight.flip_boundaries
-    reflipped = @test_time.beginning_of_fortnight
-
-    original.should_not == flipped
-    original.should == reflipped
-    (original.to_i - flipped.to_i).abs.should == 1.week
   end
 
   it "gives correct values for a test date with explict reference" do
@@ -68,12 +51,6 @@ describe Time, "#beginning_of_fortnight" do
     bof = @now_time.beginning_of_fortnight
     @now_time.end_of_fortnight .should == (bof + 13.days).end_of_day
     @now_time.next_fortnight   .should == bof + 14.days
-
-    # Test the reference week stuff again I guess
-    BeginningOfFortnight.flip_boundaries
-    alt_bof = @now_time.beginning_of_fortnight
-    alt_bof.should_not == bof
-    (bof.to_i - alt_bof.to_i).abs.should == 1.week
   end
 
   it "passes some edge case and misc sanity tests" do

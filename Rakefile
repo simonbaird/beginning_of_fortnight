@@ -28,6 +28,11 @@ task :spec do
   system "spec -c -fp spec/*"
 end
 
+desc "Run tests"
+task :rspec do
+  system "rspec -c -fp spec/*"
+end
+
 desc "Install then run tests"
 task :install_test => [:gemspec, :install, :spec] do
 end

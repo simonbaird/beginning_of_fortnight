@@ -41,3 +41,8 @@ desc "Install then run tests then build docs"
 task :all => [:gemspec, :install, :spec, :rdoc] do
 end
 
+desc "Publish to rubygems.org"
+task :publish do
+  system "gem push pkg/#{gemspec.name}-#{gemspec.version}.gem"
+end
+

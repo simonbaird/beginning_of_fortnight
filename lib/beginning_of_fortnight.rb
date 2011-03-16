@@ -1,5 +1,6 @@
 #
 # Author:: Simon Baird
+# Email:: simon.baird@gmail.com
 # Source:: https://github.com/simonbaird/beginning_of_fortnight
 # License:: 'BSD-new' where the copyright holder is Simon Baird
 #

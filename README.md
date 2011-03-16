@@ -2,11 +2,15 @@ beginning_of_fortnight
 ======================
 
 Author: Simon Baird
+
 Email: simon.baird@gmail.com
+
 Source: https://github.com/simonbaird/beginning_of_fortnight
+
 License: 'BSD-new' where the copyright holder is Simon Baird
 
 Extends ActiveSupport to provide these methods for Time and Date objects:
+
 * beginning_of_fortnight
 * end_of_fortnight
 * next_fortnight
@@ -14,11 +18,11 @@ Extends ActiveSupport to provide these methods for Time and Date objects:
 These methods should work similarly to beginning_of_week, end_of_week and next_week.
 
 Installation
-------------
+============
     sudo gem install beginning_of_fortnight
 
 Usage
------
+=====
 
 Basic Usage
 -----------

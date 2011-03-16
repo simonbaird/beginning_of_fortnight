@@ -1,9 +1,53 @@
 #
-# Author: Simon Baird
+# Author:: Simon Baird
+# Source:: https://github.com/simonbaird/beginning_of_fortnight
+# License:: 'BSD-new' where the copyright holder is Simon Baird
 #
-# Extends ActiveSupport to provide {beginning_of_,end_of,next}_fortnight
-# methods for Time and Date classes. Should work similarly to
-# {beginning_of_,end_of,next}_week.
+# Extends ActiveSupport to provide these methods for Time and Date objects:
+# * beginning_of_fortnight
+# * end_of_fortnight
+# * next_fortnight
+#
+# These methods should work similarly to beginning_of_week, end_of_week and next_week.
+#
+# This gem requires that you have a version of activesupport that defines beginning_of_week.
+#
+# =Installation
+#
+#    sudo gem install beginning_of_fortnight
+#
+# =Usage
+#
+# ===Basic usage
+#
+#    require 'rubygems'
+#    require 'beginning_of_fortnight'
+#
+#    now = Time.now
+#    puts now.beginning_of_fortnight
+#    puts now.end_of_fortnight
+#
+# ===Explicitly setting a reference date
+#
+#    require 'rubygems'
+#    require 'beginning_of_fortnight'
+#
+#    now = Time.now
+#
+#    # Globally define fortnights such that this date is the first half of a fortnight
+#    ref_date = Time.parse('13-Oct-2010')
+#    BeginningOfFortnight.reference_date = ref_date
+#
+#    puts now.beginning_of_fortnight # uses ref_date
+#
+#    # Change your mind...
+#    BeginningOfFortnight.reference_date = Time.parse('20-Oct-2010')
+#    puts now.beginning_of_fortnight # should be different
+#
+#    # You can also pass in a single use reference date if you want to mix it up
+#    other_ref_date = Time.parse('27-Oct-2010')
+#    puts now.beginning_of_fortnight(other_ref_date)
+#
 #
 
 begin
@@ -17,10 +61,12 @@ rescue LoadError
 end
 
 #
-# Just a namespace and an accessor for the a reference
+# Just a namespace and an accessor for the reference
 # date used to define fortnight boundaries.
 #
-# (Is this a sensible idiom this type of config?)
+#--
+# (Maybe this could use cattr_accessor. Not sure if it's worth it).
+#++
 #
 module BeginningOfFortnight
   #
@@ -56,14 +102,24 @@ end
 
 
 #
+# These methods should work similar to beginning_of_week and friends.
+#
+# In all these methods, if the optional argument <tt>reference_date</tt>
+# is not given then the default reference date is used. See
+# BeginningOfFortnight#reference_date.
+#
+# reference_date can be a Date or a Time object.
+#
+#--
 # ActiveRecord 2.x puts these methods in a big long name space,
 # ie ActiveSupport::CoreExtensions::Time::Calculations
 # ActiveSupport 3.x just adds methods directly to Time.
 # Will try the 3.x approach and hopefully it will work okay in 2.x also.
+#++
 #
 class Time
   #
-  # The beginning of the current fortnight
+  # The beginning of the fortnight.
   #
   def beginning_of_fortnight(reference_date=nil)
     # Can pass in a reference date, otherwise use the configured default
@@ -76,16 +132,22 @@ class Time
     weeks_since_reference = ((self - reference_week) / 1.week).to_i
 
     #
-    # If the reference time is later than self then we flip the odd/even test.
+    # If the reference time is later than self, ie in the future,
+    # then we flip the odd/even test here.
     #
-    # For example in this diagram, '|' is a fortnight boundary, '+' is a week boundary and R is the reference week
-    # |  a  +  b  |R c  +  d  |
+    # Some explanation:
     #
-    # The value of weeks_since_reference for a, b, c and d is as follows:
-    #   a (in first half) : -1, ie odd
-    #   b (in second half):  0, ie even
-    #   c (in first half) :  0, ie even
-    #   d (in second half):  1, ie odd
+    # In this diagram, '|' is a fortnight boundary, '+' is a week boundary and R is the reference week.
+    #              R
+    #  |  a  +  b  |  c  +  d  |
+    #
+    # The value of weeks_since_reference for dates at a, b, c and d is as follows:
+    #  When self is earlier than reference_date:
+    #   a (in first half) : -1, hence odd weeks_since_reference is in first half
+    #   b (in second half):  0, hence even weeks_since_reference is in second half (because -0.5.to_i is 0 for example)
+    #  When self is later than reference_date:
+    #   c (in first half) :  0, hence even weeks_since_reference is in first half
+    #   d (in second half):  1, hence odd weeks_since_reference is in second half
     #
     in_first_half = (reference_week > self ? weeks_since_reference.odd? : weeks_since_reference.even?)
 
@@ -94,22 +156,31 @@ class Time
   end
 
   #
-  # The end of the current fortnight can be derived from the beginning like this
+  # The end of the fortnight.
   #
   def end_of_fortnight(reference_date=nil)
     (beginning_of_fortnight(reference_date) + 1.week).end_of_week
   end
 
   #
-  # There is a next_week so let's make a next_fortnight as well
+  # The start of the fortnight after this one.
   #
   def next_fortnight(reference_date=nil)
     beginning_of_fortnight(reference_date) + 2.weeks
   end
 end
 
+#
+# The Date methods are defined dynamically.
+#
+# See:
+# * Time#beginning_of_fortnight
+# * Time#end_of_fortnight
+# * Time#next_fortnight
+#
 class Date
-  # Going to be lazy here...
+  # Going to be lazy here... in a good way (?)
+  # Redoing the in_first_half logic for Date objects is not quite trivial
   [:beginning_of_fortnight, :end_of_fortnight, :next_fortnight].each do |method|
     define_method(method) do |*args|
       self.to_time.send(method,*args).to_date

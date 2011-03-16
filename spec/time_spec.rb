@@ -70,8 +70,7 @@ describe Time, "#beginning_of_fortnight" do
       (nxt.end_of_fortnight - eof) .should == 2.weeks
       (nxt - prev) .should == 4.weeks
 
-      # Actually not sure if beginning_of_week in AR is
-      # always Monday, is it configurable? TODO: find out.
+      # Is it possible to configure beginning_of_week to be other than monday? I think not.
       bof.wday.should == 1 # Monday
       eof.wday.should == 0 # Sunday
       nxt.wday.should == 1 # Monday
